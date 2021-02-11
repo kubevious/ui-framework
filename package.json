@@ -17,6 +17,7 @@
   "author": "Ruben Hakopian <ruben.hakopian@gmail.com>",
   "license": "Propriatery",
   "dependencies": {
+    "axios": "^0.21.1",
     "the-lodash": "^2.0.0",
     "the-promise": "^2.0.4",
     "uuid": "^8.3.2"
