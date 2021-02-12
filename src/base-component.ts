@@ -7,23 +7,28 @@ import { app } from './global'
 
 export class BaseComponent<TService extends IService> extends PureComponent {
     
-    private _service: TService;
+    private _service?: TService;
     private _sharedState: ISharedState;
     private _subscribers: Subscriber[];
 
-    constructor(props: any, serviceInfo: ServiceInfo) {
+    constructor(props: any, serviceInfo?: ServiceInfo) {
         super(props);
 
         this._sharedState = app.sharedState.user();
         this._subscribers = []
 
-        this._service = app.serviceRegistry.resolveService<TService>(serviceInfo);
+        if (serviceInfo) {
+            this._service = app.serviceRegistry.resolveService<TService>(serviceInfo);
+        }
 
         console.log('[BaseComponent] ' + this.constructor.name + ' constructor. Props:', props);
     }
 
     get service() : IService {
-        return this._service
+        if (!this._service) {
+            throw new Error("Service Not Defined");
+        }
+        return this._service!
     }
 
     get sharedState() : ISharedState {
