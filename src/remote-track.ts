@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
 import { v4 as uuidv4 } from 'uuid';
 import { ISharedState } from './shared-state';
 import { isEmptyObject } from './utils/object-utils';
@@ -12,17 +11,8 @@ export class RemoteTrack
         this._sharedState = sharedState
     }
 
-    start({
-        action,
-        options
-    }: {
-        action: string
-        options: AxiosRequestConfig,
-    }):{
-        request: string;
-        complete: () => void;
-        fail: (error: any) => void;
-    } {
+    start(action: string, options?: any) : RemoteTrackOperation
+    {
         this._sharedState.set('is_loading', true)
 
         const request = {
@@ -59,6 +49,13 @@ export class RemoteTrack
         }
     }
 
+}
+
+export interface RemoteTrackOperation
+{
+    request: string,
+    complete: () => void,
+    fail: (error: any) => void,
 }
 
 

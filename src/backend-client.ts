@@ -67,10 +67,9 @@ export class BackendClient {
             options.data = data;
         }
         
-        const operation = this._remoteTrack.start({
-            action: `${options.method?.toUpperCase()}::${options.url}`,
-            options
-        })
+        const operation = this._remoteTrack.start(
+            `${options.method?.toUpperCase()}::${options.url}`,
+            options)
 
         return axios(options)
             .then((result: AxiosResponse<any>) => {
