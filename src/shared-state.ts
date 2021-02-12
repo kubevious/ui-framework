@@ -275,10 +275,7 @@ export interface Subscriber {
 export interface ISharedState {
     user: () => ISharedState;
     close: () => void;
-    subscribe: (keyOrKeys: string | string[], cb: SubscribeHandler) => {
-        id: string;
-        close: () => void;
-    };
+    subscribe: (keyOrKeys: string | string[], cb: SubscribeHandler) => Subscriber;
     get: (name: string) => any;
     set: (name: string, value: any) => void;
 }
