@@ -11,10 +11,9 @@ export class BaseComponent<TService extends IService> extends PureComponent {
     private _sharedState: ISharedState;
     private _subscribers: Subscriber[];
 
-    constructor(props, serviceInfo: ServiceInfo) {
+    constructor(props: any, serviceInfo: ServiceInfo) {
         super(props);
 
-        this._service = null;
         this._sharedState = app.sharedState.user();
         this._subscribers = []
 
