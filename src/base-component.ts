@@ -24,7 +24,7 @@ export class BaseComponent<TService extends IService> extends PureComponent {
         console.log('[BaseComponent] ' + this.constructor.name + ' constructor. Props:', props);
     }
 
-    get service() : IService {
+    get service() : TService {
         if (!this._service) {
             throw new Error("Service Not Defined");
         }
