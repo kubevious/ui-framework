@@ -76,7 +76,7 @@ export class BaseComponent<TService extends IService> extends PureComponent<Prop
         return this._sharedState;
     }
 
-    subscribeToSharedState(subscribers: string, cb: SubscribeHandler): void {
+    subscribeToSharedState(subscribers: string | string[], cb: SubscribeHandler): void {
         let subscriber = this._sharedState.subscribe(subscribers, cb);
         this._subscribers.push(subscriber);
     }
