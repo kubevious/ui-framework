@@ -1,11 +1,52 @@
-import { PureComponent } from 'react'
+import React, { PureComponent } from 'react'
 import { IService } from './base-service';
 import { ServiceInfo } from './service-registry';
 import { ISharedState, SubscribeHandler, Subscriber } from './shared-state';
 
 import { app } from './global'
 
-export class BaseComponent<TService extends IService> extends PureComponent {
+export type Props = {
+    id?: string
+    kind?: string
+    request?: RequestList
+    handleChangeWindow?: (e: React.ChangeEvent<HTMLInputElement>) => void
+    windows?: any
+    diagramSource?: any
+    handleLayout?: (value: any) => void
+    title?: string
+    config?: any
+    extraClassTitle?: string
+    extraClassContents?: string
+    dn?: string
+    dnKind?: string
+    groupName?: string
+    group?: any
+    propertyExpanderHandleClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+}
+
+export type RequestList = {
+    kind: string
+    id?: string
+    name?: string
+    questions?: Question[]
+    title?: string
+    content?: string
+    version?: string
+    url?: string
+    changes?: string[]
+    features?: string[]
+    request?: RequestList
+}
+
+export type Question = {
+    id: string
+    kind: string
+    text: string
+    options?: string[]
+    optional?: boolean
+}
+
+export class BaseComponent<TService extends IService> extends PureComponent<Props> {
     
     private _service?: TService;
     private _sharedState: ISharedState;
