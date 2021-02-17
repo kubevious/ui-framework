@@ -6,7 +6,7 @@ import { ClassComponent, IService } from '../src';
 describe('class-component', () => {
 
     it('test-01', () => {
-        let comp = new ClassComponent<{}, IService>({});
+        let comp = new ClassComponent<{}, {}, IService>({});
     });
 
 });

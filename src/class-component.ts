@@ -5,7 +5,7 @@ import { ISharedState, SubscribeHandler } from './shared-state';
 
 import { app } from './global'
 
-export class ClassComponent<TProps = {}, TService extends IService = IService> extends PureComponent<TProps> {
+export class ClassComponent<TProps = {}, TState = {}, TService extends IService = IService> extends PureComponent<TProps, TState> {
     
     private _service?: TService;
     private _sharedState: ISharedState;
