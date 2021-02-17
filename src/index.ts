@@ -6,7 +6,6 @@ export { IService } from './base-service'
 export { ServiceRegistry } from './service-registry'
 
 export { ClassComponent } from './class-component'
-export { ClassComponent as BaseComponent } from './class-component'
 
 export { useService, useSharedState, subscribeToSharedState } from './function-component'
 
