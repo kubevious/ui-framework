@@ -10,16 +10,15 @@ export class ClassComponent<TProps = {}, TState = {}, TService extends IService 
     private _service?: TService;
     private _sharedState: ISharedState;
 
-    constructor(props: any, serviceInfo?: ServiceInfo) {
+    constructor(props: Readonly<TProps> | TProps, context?: any, serviceInfo?: ServiceInfo) {
         super(props);
+        console.log('[ClassComponent] ' + this.constructor.name + ' constructor. Props:', props);
 
         this._sharedState = app.sharedState.user();
-
         if (serviceInfo) {
+            console.log('[ClassComponent] ' + this.constructor.name + ', ServiceInfo: ', serviceInfo);
             this._service = app.serviceRegistry.resolveService<TService>(serviceInfo);
         }
-
-        console.log('[ClassComponent] ' + this.constructor.name + ' constructor. Props:', props);
     }
 
     get service() : TService {
