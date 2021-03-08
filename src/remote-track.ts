@@ -1,47 +1,59 @@
-import { v4 as uuidv4 } from 'uuid';
+import { RequestInfo } from '@kubevious/http-client';
+
 import { ISharedState } from './shared-state';
 import { isEmptyObject } from './utils/object-utils';
+
 
 export class RemoteTrack
 {
     private _sharedState: ISharedState
-    private _requests: Record<string, RequestInfo> = {};
+    private _requests: Record<string, TrackerRequestInfo> = {};
 
     constructor(sharedState: ISharedState) {
         this._sharedState = sharedState
     }
 
-    start(action: string, options?: any) : RemoteTrackOperation
+    start(requestInfo : RequestInfo)
     {
+        console.log('[TRACKER::start] ', requestInfo.method, ' :: ', requestInfo.url);
+
         this._sharedState.set('is_loading', true)
 
-        const request = {
-            id: uuidv4(),
-            options,
+        this._requests[requestInfo.id] = {
+            id: requestInfo.id,
+            requestInfo: requestInfo,
             complete: false,
-        }
-
-        this._requests[request.id] = request
-
-        console.log(`[REMOTE_TRACK] => ${action}`)
-
-        return {
-            request: request.id,
-
-            complete: () => {
-                this.detectLoading(request.id)
-            },
-
-            fail: (error) => {
-                this._sharedState.set('is_error', true)
-                this._sharedState.set('error', error)
-
-                this.detectLoading(request.id)
-            },
         }
     }
 
-    detectLoading(id: string): void {
+    finish(requestInfo : RequestInfo, response: any)
+    {
+        console.log('[TRACKER::finish] ', requestInfo.method, ' :: ', requestInfo.url);        
+       
+        this._detectLoading(requestInfo.id)
+    }
+
+    fail(requestInfo : RequestInfo, reason: any)
+    {
+        console.error('[TRACKER::fail] ', requestInfo.method, ' :: ', requestInfo.url , ' :: ', reason.message);
+        
+        this._sharedState.set('is_error', true)
+        this._sharedState.set('error', reason)
+
+        this._detectLoading(requestInfo.id)
+    }
+
+    tryAttempt(requestInfo : RequestInfo)
+    {
+        console.info('[TRACKER::tryAttempt] ', requestInfo.method, ' :: ', requestInfo.url);
+    }
+
+    failedAttempt(requestInfo : RequestInfo, reason: any, data: any, status: number)
+    {
+        console.warn('[TRACKER::fail] ', requestInfo.method, ' :: ', requestInfo.url , ', status:', status);
+    }
+
+    private _detectLoading(id: string): void {
         delete this._requests[id];
 
         if (isEmptyObject(this._requests)) {
@@ -58,10 +70,9 @@ export interface RemoteTrackOperation
     fail: (error: any) => void,
 }
 
-
-interface RequestInfo
+interface TrackerRequestInfo
 {
     id: string,
-    options: any,
+    requestInfo : RequestInfo,
     complete: boolean,
 }

@@ -4,6 +4,7 @@ import { RemoteTrack } from './remote-track';
 import { SharedState } from './shared-state';
 import { ServiceInfo, ServiceInitCb, ServiceRegistry } from './service-registry'
 import { IService } from '.';
+import { HttpClient } from '@kubevious/http-client';
 
 export type SubscribeHandler = ((data: any) => void)
 
@@ -12,6 +13,7 @@ export class Application
     private _sharedState = new SharedState();
     private _remoteTrack = new RemoteTrack(this._sharedState);
     private _serviceRegistry = new ServiceRegistry(this._sharedState);
+    private _backendClient? : BackendClient;
 
     constructor()
     {
@@ -26,9 +28,17 @@ export class Application
         return this._serviceRegistry;
     }
 
-    backendClient(urlBase: string) : BackendClient
+    initHttpClient(urlBase?: string)
     {
-        return new BackendClient(urlBase, this._remoteTrack);
+        this._backendClient = new BackendClient(urlBase, this._remoteTrack);
+    }
+
+    httpClient(url: string) : HttpClient
+    {
+        if (!this._backendClient) {
+            throw new Error("HttpClient not initialized. Call [initHttpClient] first.");
+        }
+        return this._backendClient!.scope(url);
     }
 
     registerService<T extends IService>(info: ServiceInfo, cb: ServiceInitCb<T>): void
