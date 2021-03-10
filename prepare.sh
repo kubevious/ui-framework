@@ -8,3 +8,5 @@ rm -rf dist/
 
 npm install
 npm update the-lodash the-promise the-logger @kubevious/http-client
+
+${MY_DIR}/build.sh
