@@ -8,21 +8,21 @@ export interface BackendClientOptions
     timeout?: number,
     retry?: HttpClientRetryOptions,
     headers?: Record<string, string>,
-    tracker?: RemoteTrack,
     authorizerCb?: AuthorizerCb,
 }
 
 export class BackendClient {
     private _client : HttpClient;
 
-    constructor(urlBase?: string, options?: BackendClientOptions)
+    constructor(urlBase?: string, remoteTrack?: RemoteTrack, options?: BackendClientOptions)
     {
         options = options || {};
         this._client = new HttpClient(urlBase || '', {
             timeout: options.timeout,
+            absorbFailures: true,
             retry: options.retry,
             headers: options.headers,
-            tracker: options.tracker,
+            tracker: remoteTrack,
             authorizerCb: options.authorizerCb
         })
     }

@@ -9,8 +9,7 @@ describe('backend-client', () => {
 
     it('test-01', () => {
         let sharedState = new SharedState();
-        let client = new BackendClient('', {
-            tracker: new RemoteTrack(sharedState)
+        let client = new BackendClient('', new RemoteTrack(sharedState), {
         });
     });
 

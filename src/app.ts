@@ -30,7 +30,7 @@ export class Application
 
     initHttpClient(urlBase?: string, options?: BackendClientOptions)
     {
-        this._backendClient = new BackendClient(urlBase, options);
+        this._backendClient = new BackendClient(urlBase, this._remoteTrack, options);
     }
 
     httpClient(url: string) : HttpClient
