@@ -1,5 +1,5 @@
 import _ from 'the-lodash'
-import { BackendClient } from './backend-client';
+import { BackendClient, BackendClientOptions } from './backend-client';
 import { RemoteTrack } from './remote-track';
 import { SharedState } from './shared-state';
 import { ServiceInfo, ServiceInitCb, ServiceRegistry } from './service-registry'
@@ -28,9 +28,9 @@ export class Application
         return this._serviceRegistry;
     }
 
-    initHttpClient(urlBase?: string)
+    initHttpClient(urlBase?: string, options?: BackendClientOptions)
     {
-        this._backendClient = new BackendClient(urlBase, this._remoteTrack);
+        this._backendClient = new BackendClient(urlBase, options);
     }
 
     httpClient(url: string) : HttpClient
