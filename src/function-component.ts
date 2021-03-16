@@ -6,24 +6,34 @@ import { ServiceInfo } from './service-registry';
 import { app } from './global'
 import { ISharedState, SubscribeHandler } from './shared-state';
 
-export function useService<TService extends IService>(info: ServiceInfo, cb: (service: TService) => any, deps?: DependencyList)
+export type UseServiceCallback<TService> = (service: TService) => (void | (() => void | undefined));
+
+export function useService<TService extends IService>(info: ServiceInfo, cb: UseServiceCallback<TService>, deps?: DependencyList)
 {
     useEffect(() => {
         const service = app.serviceRegistry.resolveService<TService>(info);
-        cb(service);
+        const result = cb(service);
         return () => {
-            
+            service.close();
+            if (result) {
+                result();
+            }
         }
     }, deps)
 }
 
-export function useSharedState(cb: (sharedState: ISharedState) => any) : void
+export type UseSharedStateCallback = (sharedState: ISharedState) => (void | (() => void | undefined));
+
+export function useSharedState(cb: UseSharedStateCallback) : void
 {
     useEffect(() => {
         const sharedState = app.sharedState.user();
-        cb(sharedState);
+        const result = cb(sharedState);
         return () => {
             sharedState.close();
+            if (result) {
+                result();
+            }
         }
     }, [])
 }
