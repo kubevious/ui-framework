@@ -1,6 +1,7 @@
 import _ from 'the-lodash'
 import { v4 as uuidv4 } from 'uuid';
 
+export type GlobalSubscribeHandler = (() => void)
 export type SubscribeHandler = ((data: any) => void)
 
 export class SharedState implements ISharedState
@@ -9,6 +10,7 @@ export class SharedState implements ISharedState
     private _isScheduled : boolean = false;
     private _lastValues : Record<string, any> = {};
     private _values : Record<string, any> = {};
+    private _globalSubscribers : Record<string, InternalGlobalSubscriber> = {};
     private _subscribers : Record<string, InternalSubscriber> = {};
     private _subscribedKeys : Record<string, Record<string, boolean> > = {};
     private _metadata : Record<string, SharedFieldMetadata> = {};
@@ -16,6 +18,11 @@ export class SharedState implements ISharedState
     constructor()
     {
         console.log("[SharedState] CONSTRUCTOR");
+    }
+
+    get keys()
+    {
+        return _.keys(this._values);
     }
 
     register(name: string, options?: SharedFieldOptions)
@@ -111,6 +118,25 @@ export class SharedState implements ISharedState
             id: subscriber.id,
             close: () => {
                 delete this._subscribers[subscriber.id];
+            }
+        };
+    }
+
+    onChange(cb: GlobalSubscribeHandler)
+    {
+        let subscriber : InternalGlobalSubscriber = {
+            id: uuidv4(),
+            handler: cb,
+        }
+
+        this._globalSubscribers[subscriber.id] = subscriber;
+
+        cb();
+        
+        return {
+            id: subscriber.id,
+            close: () => {
+                delete this._globalSubscribers[subscriber.id];
             }
         };
     }
@@ -217,6 +243,14 @@ export class SharedState implements ISharedState
         {
             this._notifyToSubscriber(id);
         }
+
+        if (_.keys(this._globalSubscribers).length > 0) 
+        {
+            for(let globalSubscriber of _.values(this._globalSubscribers))
+            {
+                globalSubscriber.handler();
+            }
+        }
     }
 
     private _notifyToSubscriber(id: string)
@@ -266,6 +300,12 @@ interface InternalSubscriber {
     isArray: boolean;
     keys: string[];
 }
+
+interface InternalGlobalSubscriber {
+    id: string,
+    handler: GlobalSubscribeHandler,
+}
+
 
 export interface Subscriber {
     id: string,
