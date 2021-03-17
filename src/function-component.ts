@@ -35,7 +35,7 @@ export function useSharedState(cb: UseSharedStateCallback, deps: DependencyList 
                 result();
             }
         }
-    }, [])
+    }, deps)
 }
 
 export function subscribeToSharedState(keyOrKeys: string | string[], cb: SubscribeHandler)
