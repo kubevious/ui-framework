@@ -91,4 +91,46 @@ describe('shared-state', () => {
             ;
 
     });
+
+
+    it('test-global-scoped-subscribe', () => {
+        let globalSharedState = new SharedState();
+        const sharedState = globalSharedState.user();
+        sharedState.set('aaa', 'bbb');
+
+        let stage : number = 1;
+        let stage1Passed : boolean = false;
+        let stage2Passed : boolean = false;
+
+        return Promise.resolve()
+            .then(() => {
+
+                sharedState.onChange(() => {
+                    if (stage === 1) {
+                        stage1Passed = true;
+                    }
+                    if (stage === 2) {
+                        stage2Passed = true;
+                    }
+                })
+
+            })
+            .then(() => Promise.timeout(100))
+            .then(() => {
+                should(stage1Passed).be.true();
+            })
+            .then(() => {
+                stage = 2;
+                sharedState.set('aaa', 'ccc');
+            })
+            .then(() => Promise.timeout(100))
+            .then(() => {
+                should(stage2Passed).be.true();
+                should(sharedState.keys).be.eql(['aaa'])
+            })
+            ;
+
+    });
+
+
 });

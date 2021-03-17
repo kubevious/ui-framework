@@ -20,7 +20,7 @@ export class SharedState implements ISharedState
         console.log("[SharedState] CONSTRUCTOR");
     }
 
-    get keys()
+    get keys() : string[]
     {
         return _.keys(this._values);
     }
@@ -54,30 +54,8 @@ export class SharedState implements ISharedState
 
     user() : ISharedState
     {
-        let subscribers : Subscriber[] = [];
-
-        return {
-            user: () => {
-                return this.user();
-            },
-            close: () => {
-                for(let x of subscribers) {
-                    x.close();
-                }
-                subscribers = [];
-            },
-            subscribe: (keyOrKeys, cb) => {
-                let subscriber = this.subscribe(keyOrKeys, cb);
-                subscribers.push(subscriber);
-                return subscriber;
-            },
-            get: (name: string) => {
-                return this.get(name);
-            },
-            set: (name: string, value: any) => {
-                return this.set(name, value);
-            }
-        }
+        const scopedSharedState = new SharedStateScope(this);
+        return scopedSharedState;
     }
 
     /*
@@ -122,7 +100,7 @@ export class SharedState implements ISharedState
         };
     }
 
-    onChange(cb: GlobalSubscribeHandler)
+    onChange(cb: GlobalSubscribeHandler) : Subscriber
     {
         let subscriber : InternalGlobalSubscriber = {
             id: uuidv4(),
@@ -306,7 +284,6 @@ interface InternalGlobalSubscriber {
     handler: GlobalSubscribeHandler,
 }
 
-
 export interface Subscriber {
     id: string,
     close: () => void
@@ -315,7 +292,59 @@ export interface Subscriber {
 export interface ISharedState {
     user: () => ISharedState;
     close: () => void;
+    keys: string[];
     subscribe: (keyOrKeys: string | string[], cb: SubscribeHandler) => Subscriber;
     get: (name: string) => any;
     set: (name: string, value: any) => void;
+    onChange(cb: GlobalSubscribeHandler) : Subscriber;
+}
+
+export class SharedStateScope implements ISharedState
+{
+    private _sharedState : SharedState;
+    private _subscribers : Subscriber[] = [];
+
+    constructor(sharedState : SharedState)
+    {
+        this._sharedState = sharedState;
+    }
+
+    user() {
+        return this._sharedState.user();
+    }
+
+    close() {
+        for(let x of this._subscribers) {
+            x.close();
+        }
+        this._subscribers = [];
+    }
+
+    subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber
+    {
+        let subscriber = this._sharedState.subscribe(keyOrKeys, cb);
+        this._subscribers.push(subscriber);
+        return subscriber;
+    }
+
+    get(name: string) : any
+    {
+        return this._sharedState.get(name);
+    }
+
+    set(name: string, value: any)
+    {
+        return this._sharedState.set(name, value);
+    }
+
+    onChange(cb: GlobalSubscribeHandler) : Subscriber {
+        let subscriber = this._sharedState.onChange(cb);
+        this._subscribers.push(subscriber);
+        return subscriber;
+    }
+
+    get keys() : string[]
+    {
+        return this._sharedState.keys;
+    }
 }
