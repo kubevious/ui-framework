@@ -24,7 +24,7 @@ export function useService<TService extends IService>(info: ServiceInfo, cb: Use
 
 export type UseSharedStateCallback = (sharedState: ISharedState) => (void | (() => void | undefined));
 
-export function useSharedState(cb: UseSharedStateCallback) : void
+export function useSharedState(cb: UseSharedStateCallback, deps: DependencyList = []) : void
 {
     useEffect(() => {
         const sharedState = app.sharedState.user();
