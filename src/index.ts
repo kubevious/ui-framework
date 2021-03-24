@@ -11,4 +11,4 @@ export { useService, useSharedState, subscribeToSharedState } from './function-c
 
 export { app } from './global'
 
-export { HttpClient } from '@kubevious/http-client'
+export { HttpClient, HttpMethod } from '@kubevious/http-client'
