@@ -12,3 +12,5 @@ export { useService, useSharedState, subscribeToSharedState } from './function-c
 export { app } from './global'
 
 export { HttpClient, HttpMethod } from '@kubevious/http-client'
+
+export { useSearchQuery } from './query-params'
