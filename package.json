@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@kubevious/http-client": "^1.0.11",
-    "react": "^17.0.1",
+    "react": "^17.0.2",
     "react-router-dom": "^5.2.0",
     "the-lodash": "^2.0.9",
     "the-promise": "^2.0.12",
