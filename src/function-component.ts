@@ -1,4 +1,4 @@
-import React, { FunctionComponent, PropsWithChildren, ReactElement, useEffect, DependencyList } from 'react'; 
+import { useEffect, DependencyList, useState } from 'react'; 
 
 import _ from 'the-lodash'
 
@@ -9,46 +9,62 @@ import { app } from './global'
 import { ISharedState, SubscribeHandler } from './shared-state';
 
 export type UseServiceCallback<TService> = (service: TService) => (void | (() => void | undefined));
-
-export function useService<TService extends IService>(info: ServiceInfo, cb: UseServiceCallback<TService>, deps?: DependencyList)
+export function useService<TService extends IService>
+    (info: ServiceInfo,
+     cb?: UseServiceCallback<TService>,
+     deps?: DependencyList) : TService | undefined
 {
-    if (_.isNullOrUndefined(deps)) {
-        deps = [];
-    }
+    const [service, setService] = useState<TService>();
+
     useEffect(() => {
-        const service = app.serviceRegistry.resolveService<TService>(info);
-        const result = cb(service);
+        const myService = app.serviceRegistry.resolveService<TService>(info);
+        setService(myService);
+        let result : any;
+        if (cb) {
+            result = cb(myService);
+        }
         return () => {
-            service.close();
+            myService.close();
+            setService(undefined);
             if (result) {
                 result();
             }
         }
-    }, deps)
+    }, _.isNullOrUndefined(deps) ? [] : deps)
+
+    return service;
 }
 
 export type UseSharedStateCallback = (sharedState: ISharedState) => (void | (() => void | undefined));
 
-export function useSharedState(cb: UseSharedStateCallback, deps: DependencyList = []) : void
+export function useSharedState
+    (cb?: UseSharedStateCallback,
+     deps?: DependencyList) : ISharedState | undefined
 {
-    if (_.isNullOrUndefined(deps)) {
-        deps = [];
-    }
+    const [sharedState, setSharedState] = useState<ISharedState>();
+
     useEffect(() => {
-        const sharedState = app.sharedState.user();
-        const result = cb(sharedState);
+        const mySharedState = app.sharedState.user();
+        setSharedState(mySharedState);
+        let result : any;
+        if (cb) {
+            result = cb(mySharedState);
+        }
         return () => {
-            sharedState.close();
+            mySharedState.close();
+            setSharedState(undefined);
             if (result) {
                 result();
             }
         }
-    }, deps)
+    }, _.isNullOrUndefined(deps) ? [] : deps)
+
+    return sharedState;
 }
 
 export function subscribeToSharedState(keyOrKeys: string | string[], cb: SubscribeHandler)
 {
     useSharedState((sharedState) => {
         sharedState.subscribe(keyOrKeys, cb);
-    }, [])
+    })
 }
