@@ -15,4 +15,4 @@ export { HttpClient, HttpMethod } from '@kubevious/http-client'
 
 export { useSearchQuery } from './query-params'
 
-export { ReportOperationLog } from './report-operation-log'
+export { ReportOperationLog, TOP_MESSAGES_NUMBER } from './report-operation-log'

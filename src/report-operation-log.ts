@@ -8,6 +8,7 @@ export type Message = {
     date: Date
 }
 
+export const TOP_MESSAGES_NUMBER = 5 // max messages
 
 export class ReportOperationLog {
     private _sharedState: ISharedState
@@ -22,8 +23,6 @@ export class ReportOperationLog {
     }
 
     report(message: string): void {
-        const TOP_MESSAGES_NUMBER = 5 // max messages
-
         let operationLogs = this._sharedState.get('operation_logs')
 
         const newMessage = { id: uuidv4(), message, date: new Date() }
