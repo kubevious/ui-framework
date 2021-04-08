@@ -18,6 +18,8 @@ export class ReportOperationLog {
 
         this._sharedState.set('operation_logs', [])
         this._sharedState.set('latest_operation_log', null)
+
+        this.report = this.report.bind(this)
     }
 
     report(message: string): void {
