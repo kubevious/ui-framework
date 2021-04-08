@@ -8,7 +8,6 @@ export type Message = {
     date: Date
 }
 
-export const TOP_MESSAGES_NUMBER = 5
 
 export class ReportOperationLog {
     private _sharedState: ISharedState
@@ -23,13 +22,22 @@ export class ReportOperationLog {
     }
 
     report(message: string): void {
-        const operationLogs = this._sharedState.get('operation_logs')
+        const TOP_MESSAGES_NUMBER = 5 // max messages
+
+        let operationLogs = this._sharedState.get('operation_logs')
 
         const newMessage = { id: uuidv4(), message, date: new Date() }
 
         this._sharedState.set('latest_operation_log', newMessage)
 
-        this._sharedState.set('operation_logs', operationLogs.concat(newMessage))
+        operationLogs = [newMessage, ...operationLogs]
+
+        const newoperationLogs =
+            operationLogs.length > TOP_MESSAGES_NUMBER
+                ? operationLogs.slice(0, TOP_MESSAGES_NUMBER)
+                : operationLogs
+
+        this._sharedState.set('operation_logs', newoperationLogs);
 
         setTimeout(() => {
             this.removeMessage(newMessage)
