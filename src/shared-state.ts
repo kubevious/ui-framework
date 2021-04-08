@@ -290,12 +290,12 @@ export interface Subscriber {
 };
 
 export interface ISharedState {
-    user: () => ISharedState;
-    close: () => void;
+    user() : ISharedState;
+    close() : void;
     keys: string[];
-    subscribe: (keyOrKeys: string | string[], cb: SubscribeHandler) => Subscriber;
-    get: (name: string) => any;
-    set: (name: string, value: any) => void;
+    subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber;
+    get<T = any>(name: string) : T;
+    set<T = any>(name: string, value: T) : void;
     onChange(cb: GlobalSubscribeHandler) : Subscriber;
 }
 
@@ -327,12 +327,12 @@ export class SharedStateScope implements ISharedState
         return subscriber;
     }
 
-    get(name: string) : any
+    get<T = any>(name: string) : T
     {
-        return this._sharedState.get(name);
+        return <T>this._sharedState.get(name);
     }
 
-    set(name: string, value: any)
+    set<T = any>(name: string, value: T)
     {
         return this._sharedState.set(name, value);
     }

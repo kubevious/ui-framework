@@ -1,4 +1,3 @@
-import { app } from "./global";
 import { ISharedState } from "./shared-state";
 import { v4 as uuidv4 } from 'uuid'
 
@@ -9,12 +8,14 @@ export type Message = {
 }
 
 export const TOP_MESSAGES_NUMBER = 5 // max messages
+export const MESSAGES_TIMEOUT_MS = 5000 // max messages
 
-export class ReportOperationLog {
+export class OperationLogTracker
+{
     private _sharedState: ISharedState
 
-    constructor() {
-        this._sharedState = app.sharedState
+    constructor(sharedState: ISharedState) {
+        this._sharedState = sharedState;
 
         this._sharedState.set('operation_logs', [])
         this._sharedState.set('latest_operation_log', null)
@@ -31,21 +32,23 @@ export class ReportOperationLog {
 
         operationLogs = [newMessage, ...operationLogs]
 
-        const newoperationLogs =
+        const newOperationLogs =
             operationLogs.length > TOP_MESSAGES_NUMBER
                 ? operationLogs.slice(0, TOP_MESSAGES_NUMBER)
                 : operationLogs
 
-        this._sharedState.set('operation_logs', newoperationLogs);
+        this._sharedState.set('operation_logs', newOperationLogs);
 
         setTimeout(() => {
-            this.removeMessage(newMessage)
-        }, 10000) // 10sec
+            this._removeMessage(newMessage)
+        }, MESSAGES_TIMEOUT_MS)
     }
 
-    removeMessage(message: Message): void {
-        const operationLogs: Message[] = this._sharedState.get('operation_logs')
+    private _removeMessage(message: Message) {
+        const operationLogs = this._sharedState.get<Message[]>('operation_logs')
 
-        this._sharedState.set('operation_logs', operationLogs.filter(item => item.id !== message.id))
+        const newOperationLogs = operationLogs.filter(item => item.id !== message.id)
+
+        this._sharedState.set('operation_logs', newOperationLogs)
     }
 }
