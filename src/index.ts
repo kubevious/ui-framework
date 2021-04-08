@@ -14,3 +14,5 @@ export { app } from './global'
 export { HttpClient, HttpMethod } from '@kubevious/http-client'
 
 export { useSearchQuery } from './query-params'
+
+export { ReportOperationLog, TOP_MESSAGES_NUMBER } from './report-operation-log'
