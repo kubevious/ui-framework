@@ -2,11 +2,12 @@ import _ from "the-lodash";
 import { ISharedState } from './shared-state';
 import { IService } from './base-service';
 
-export interface ServiceInitParams {
-
+export interface ServiceInitParams<TServiceInfo> {
+    info: TServiceInfo,
+    sharedState: ISharedState
 }
 
-export type ServiceInitCb<T extends IService> = (params: ServiceInitParams) => T;
+export type ServiceInitCb<TService extends IService, TServiceInfo = {}> = (params: ServiceInitParams<TServiceInfo>) => TService;
 
 export class ServiceRegistry
 {
@@ -27,18 +28,19 @@ export class ServiceRegistry
         return _.keys(this._servicesDict);
     }
 
-    registerService<T extends IService>(info: ServiceInfo, cb: ServiceInitCb<T>): void
+    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService>): void
     {
         if (!info.kind) {
             throw new Error("Service kind not set");
         }
         
         const svcInfo : ServiceItem = {
+            kind: info.kind,
             info: info,
             cb: cb,
             services: {}
         };
-        this._servicesDict[info.kind] = svcInfo;
+        this._servicesDict[svcInfo.kind] = svcInfo;
     }
 
     closeServicesByKind(kind: string): void
@@ -53,11 +55,12 @@ export class ServiceRegistry
         }
     }
 
-    resolveService<T extends IService>(info: ServiceInfo): T | never
+    resolveService<TService extends IService, TServiceInfo = {}>(info: ServiceInfo<TServiceInfo>): TService | never
     {
         if (!info.kind) {
             throw new Error("Service kind not set");
         }
+
         const svcInfo = this._servicesDict[info.kind];
         if (!svcInfo) {
             throw new Error("Unknown service: " + info.kind);
@@ -66,33 +69,32 @@ export class ServiceRegistry
         const key: string = _.stableStringify(info);
         if (key in svcInfo.services) {
             let svc = svcInfo.services[key];
-            return <T>svc;
+            return <TService>svc;
         }
 
         let commonService = svcInfo.cb({
             info, 
-            sharedState: this.sharedState,
-            parent: this
+            sharedState: this.sharedState
         });
 
         if (!commonService) {
             throw new Error(`Could not resolve service ${info.kind}`);
         }
 
-        let service = <T>commonService;
+        let service = <TService>commonService;
         svcInfo.services[key] = service;
         return service;
     }
 
 }
 
-export interface ServiceInfo
-{
+export type ServiceInfo<TServiceInfo = {}> = {
     kind: string 
-}
+} & TServiceInfo;
 
 interface ServiceItem
 {
+    kind: string,
     info: ServiceInfo,
     cb: ServiceInitCb<IService>,
     services: Record<string, IService>

@@ -46,8 +46,8 @@ export class Application
         return this._backendClient!.scope(url);
     }
 
-    registerService<T extends IService>(info: ServiceInfo, cb: ServiceInitCb<T>): void
+    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService>): void
     {
-        return this.serviceRegistry.registerService(info, cb);
+        return this.serviceRegistry.registerService<TService, TServiceInfo>(info, cb);
     }
 }
