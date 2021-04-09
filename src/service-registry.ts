@@ -12,7 +12,7 @@ export type ServiceInitCb<TService extends IService, TServiceInfo = {}> = (param
 export class ServiceRegistry
 {
     private _sharedState: ISharedState
-    private _servicesDict: Record<string, ServiceItem> = {};
+    private _servicesDict: Record<string, ServiceItem<IService, {}>> = {};
 
     constructor(sharedState: ISharedState)
     {
@@ -34,13 +34,13 @@ export class ServiceRegistry
             throw new Error("Service kind not set");
         }
         
-        const svcInfo : ServiceItem = {
+        const svcInfo : ServiceItem<TService, TServiceInfo> = {
             kind: info.kind,
             info: info,
             cb: cb,
             services: {}
         };
-        this._servicesDict[svcInfo.kind] = svcInfo;
+        this._servicesDict[svcInfo.kind] = <ServiceItem<IService, {}>>(<any>svcInfo);
     }
 
     closeServicesByKind(kind: string): void
@@ -72,18 +72,19 @@ export class ServiceRegistry
             return <TService>svc;
         }
 
-        let commonService = svcInfo.cb({
+        const mySvcInfo = <ServiceItem<TService, TServiceInfo>>(<any>svcInfo);
+
+        let newService = mySvcInfo.cb({
             info, 
             sharedState: this.sharedState
         });
 
-        if (!commonService) {
+        if (!newService) {
             throw new Error(`Could not resolve service ${info.kind}`);
         }
 
-        let service = <TService>commonService;
-        svcInfo.services[key] = service;
-        return service;
+        svcInfo.services[key] = newService;
+        return newService;
     }
 
 }
@@ -92,10 +93,10 @@ export type ServiceInfo<TServiceInfo = {}> = {
     kind: string 
 } & TServiceInfo;
 
-interface ServiceItem
+interface ServiceItem<TService extends IService, TServiceInfo = {}>
 {
     kind: string,
     info: ServiceInfo,
-    cb: ServiceInitCb<IService>,
+    cb: ServiceInitCb<TService, TServiceInfo>,
     services: Record<string, IService>
 };
