@@ -28,7 +28,7 @@ export class ServiceRegistry
         return _.keys(this._servicesDict);
     }
 
-    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService>): void
+    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService, TServiceInfo>): void
     {
         if (!info.kind) {
             throw new Error("Service kind not set");
