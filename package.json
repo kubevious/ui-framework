@@ -1,6 +1,6 @@
 {
   "name": "@kubevious/ui-framework",
-  "version": "1.0.34",
+  "version": "1.0.35",
   "description": "Kubevious UI Framework",
   "main": "dist/index.js",
   "types": "dist",
