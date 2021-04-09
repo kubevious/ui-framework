@@ -19,20 +19,20 @@ export class BaseService implements IService
         this._resources.push(this._sharedState);
     }
 
-    get sharedState() {
+    public get sharedState() {
         return this._sharedState;
     }
 
-    get operationLog() {
+    public get operationLog() {
         return this._operationLog;
     }
 
-    registerResource(closable: IClosable)
+    public registerResource(closable: IClosable)
     {
         this._resources.push(closable)
     }
     
-    close()
+    public close()
     {
         console.log('[BaseService] ' + this.constructor.name + ' :: destroy');
 

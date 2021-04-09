@@ -17,7 +17,7 @@ export class BaseHttpService extends BaseService
         }
     }
 
-    get client() {
+    public get client() {
         return this._client;
     }
 }
