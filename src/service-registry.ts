@@ -38,22 +38,22 @@ export class ServiceRegistry
             kind: info.kind,
             info: info,
             cb: cb,
-            services: {}
+            // services: {}
         };
         this._servicesDict[svcInfo.kind] = <ServiceItem<IService, {}>>(<any>svcInfo);
     }
 
-    closeServicesByKind(kind: string): void
-    {
-        const svcInfo = this._servicesDict[kind];
-        if (svcInfo) {
-            for(let service of _.values(svcInfo.services))
-            {
-                service.close()
-            }
-            svcInfo.services = {};
-        }
-    }
+    // closeServicesByKind(kind: string): void
+    // {
+    //     const svcInfo = this._servicesDict[kind];
+    //     if (svcInfo) {
+    //         for(let service of _.values(svcInfo.services))
+    //         {
+    //             service.close()
+    //         }
+    //         svcInfo.services = {};
+    //     }
+    // }
 
     resolveService<TService extends IService, TServiceInfo = {}>(info: ServiceInfo<TServiceInfo>): TService | never
     {
@@ -66,11 +66,11 @@ export class ServiceRegistry
             throw new Error("Unknown service: " + info.kind);
         }
         
-        const key: string = _.stableStringify(info);
-        if (key in svcInfo.services) {
-            let svc = svcInfo.services[key];
-            return <TService>svc;
-        }
+        // const key: string = _.stableStringify(info);
+        // if (key in svcInfo.services) {
+        //     let svc = svcInfo.services[key];
+        //     return <TService>svc;
+        // }
 
         const mySvcInfo = <ServiceItem<TService, TServiceInfo>>(<any>svcInfo);
 
@@ -83,7 +83,7 @@ export class ServiceRegistry
             throw new Error(`Could not resolve service ${info.kind}`);
         }
 
-        svcInfo.services[key] = newService;
+        // svcInfo.services[key] = newService;
         return newService;
     }
 
@@ -98,5 +98,5 @@ interface ServiceItem<TService extends IService, TServiceInfo = {}>
     kind: string,
     info: ServiceInfo,
     cb: ServiceInitCb<TService, TServiceInfo>,
-    services: Record<string, IService>
+    // services: Record<string, IService>
 };
