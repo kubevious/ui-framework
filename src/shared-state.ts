@@ -205,13 +205,30 @@ export class SharedState implements ISharedState
             return;
         }
 
-        let value : any;
-        if (persistence.deserialize) {
-            value = persistence.deserialize(rawValue!);
-        } else {
-            value = rawValue;
+        try
+        {
+            let value : any = rawValue;
+
+            if (persistence.deserialize) {
+                value = persistence.deserialize(value!);
+            } else {
+                if (persistence.base64 || persistence.json)
+                {
+                    rawValue = atob(value!)
+                }
+    
+                if (persistence.json) {
+                    value = JSON.parse(value)
+                }
+            }
+
+            this.set(name, value);
         }
-        this.set(name, value);
+        catch(reason)
+        {
+            console.error(reason);
+            return;
+        }
     }
 
     private _processPersistence(name: string, value: any, persistence: SharedFieldPersistenceOptions)
@@ -253,11 +270,24 @@ export class SharedState implements ISharedState
 
     private _getPersistentValue(value: any, persistence: SharedFieldPersistenceOptions)
     {
+        let rawValue = value;
+
         if (persistence.serialize) {
-            return persistence.serialize(value);
+            rawValue = persistence.serialize(rawValue);
         } else {
-            return _.toString(value);
+            if (persistence.json) {
+                rawValue = _.stableStringify(rawValue);
+            } else {
+                rawValue = _.toString(rawValue);
+            }
+
+            if (persistence.base64 || persistence.json)
+            {
+                rawValue = btoa(rawValue)
+            }
         }
+
+        return rawValue;
     }
 
     private _trigger()
@@ -378,10 +408,11 @@ export class SharedState implements ISharedState
 export interface SharedFieldPersistenceOptions {
     kind: 'url' | 'local-storage',
     key: string,
+    base64?: boolean,
+    json?: boolean,
     serialize?: (value: any) => string,
     deserialize?: (value: string) => any
 }
-
 
 export interface SharedFieldOptions {
     skipCompare? : boolean
