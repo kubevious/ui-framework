@@ -14,6 +14,7 @@ export class SharedState implements ISharedState
     private _subscribers : Record<string, InternalSubscriber> = {};
     private _subscribedKeys : Record<string, Record<string, boolean> > = {};
     private _metadata : Record<string, SharedFieldMetadata> = {};
+    private _skipPersistence = false;
 
     constructor()
     {
@@ -29,22 +30,6 @@ export class SharedState implements ISharedState
     {
         let metadata = this._makeMetadata(options)
         this._metadata[name] = metadata;
-    }
-
-    private _makeMetadata(options?: SharedFieldOptions) : SharedFieldMetadata
-    {
-        options = options || {};
-        let metadata : SharedFieldMetadata = {
-            skipCompare: _.isNullOrUndefined(options.skipCompare) ? false : options.skipCompare!,
-            skipValueOutput: _.isNullOrUndefined(options.skipValueOutput) ? false : options.skipValueOutput!,
-        }
-        return metadata;
-    }
-
-    private _getMetadata(name: string) : SharedFieldMetadata
-    {
-        let value = this._metadata[name];
-        return this._makeMetadata(value);
     }
 
     close()
@@ -161,7 +146,118 @@ export class SharedState implements ISharedState
             this._values[name] = value;
         }
 
+        if (metadata.persistence) {
+            this._processPersistence(name, value, metadata.persistence);
+        }
+
         this._trigger();
+    }
+
+    init()
+    {
+        this._loadPersistedValues();
+    }
+    
+    private _loadPersistedValues()
+    {
+        try
+        {
+            this._skipPersistence = true;
+
+            let searchParams = new URLSearchParams(window.location.search);
+
+            for(let name of _.keys(this._metadata))
+            {
+                const metadata = this._getMetadata(name);
+                if (metadata.persistence)
+                {
+                    this._loadPersistentValue(searchParams, name, metadata.persistence)
+                }
+            }
+        }
+        finally
+        {
+            this._skipPersistence = false;
+        }
+    }
+
+    private _loadPersistentValue(searchParams: URLSearchParams, name: string, persistence: SharedFieldPersistenceOptions)
+    {
+        if (persistence.kind === 'url')
+        {
+            let rawValue = searchParams.get(persistence.key);
+            this._applyPersistentValue(name, rawValue, persistence);
+            return;
+        }
+
+        if (persistence.kind === 'local-storage')
+        {
+            let rawValue = localStorage.getItem(persistence.key);
+            this._applyPersistentValue(name, rawValue, persistence);
+            return;
+        }
+    }
+
+    private _applyPersistentValue(name: string, rawValue: string | null, persistence: SharedFieldPersistenceOptions)
+    {
+        if (_.isNullOrUndefined(rawValue)) {
+            this.set(name, null);
+            return;
+        }
+
+        let value : any;
+        if (persistence.deserialize) {
+            value = persistence.deserialize(rawValue!);
+        } else {
+            value = rawValue;
+        }
+        this.set(name, value);
+    }
+
+    private _processPersistence(name: string, value: any, persistence: SharedFieldPersistenceOptions)
+    {
+        if (this._skipPersistence) {
+            return;
+        }
+        
+        if (persistence.kind === 'url')
+        {
+            let searchParams = new URLSearchParams(window.location.search);
+            if (_.isNullOrUndefined(value)) {
+                searchParams.delete(persistence.key)
+            } else {
+                searchParams.set(persistence.key, this._getPersistentValue(value, persistence));
+            }
+
+            let url = "";
+            url += window.location.pathname;
+            let searchParamsStr = searchParams.toString();
+            if (searchParamsStr) {
+                url += '?' + searchParamsStr;
+            }
+
+            window.history.pushState(window.history.state, window.document.title, url);
+            return;
+        }
+
+        if (persistence.kind === 'local-storage')
+        {
+            if (_.isNullOrUndefined(value)) {
+                localStorage.removeItem(persistence.key)
+            } else {
+                localStorage.setItem(persistence.key, this._getPersistentValue(value, persistence));
+            }
+            return;
+        }
+    }
+
+    private _getPersistentValue(value: any, persistence: SharedFieldPersistenceOptions)
+    {
+        if (persistence.serialize) {
+            return persistence.serialize(value);
+        } else {
+            return _.toString(value);
+        }
     }
 
     private _trigger()
@@ -260,16 +356,43 @@ export class SharedState implements ISharedState
         // console.log("[SharedState] Trigger " + id + " :: " + JSON.stringify(argsArray));
         subscriber.handler.apply(null, <any>argsArray);
     }
+
+    private _makeMetadata(options?: SharedFieldOptions) : SharedFieldMetadata
+    {
+        options = options || {};
+        let metadata : SharedFieldMetadata = {
+            skipCompare: _.isNullOrUndefined(options.skipCompare) ? false : options.skipCompare!,
+            skipValueOutput: _.isNullOrUndefined(options.skipValueOutput) ? false : options.skipValueOutput!,
+            persistence: options.persistence
+        }
+        return metadata;
+    }
+
+    private _getMetadata(name: string) : SharedFieldMetadata
+    {
+        let value = this._metadata[name];
+        return this._makeMetadata(value);
+    }
 }
+
+export interface SharedFieldPersistenceOptions {
+    kind: 'url' | 'local-storage',
+    key: string,
+    serialize?: (value: any) => string,
+    deserialize?: (value: string) => any
+}
+
 
 export interface SharedFieldOptions {
     skipCompare? : boolean
     skipValueOutput? : boolean
+    persistence?: SharedFieldPersistenceOptions
 }
 
 export interface SharedFieldMetadata {
     skipCompare : boolean
     skipValueOutput : boolean
+    persistence?: SharedFieldPersistenceOptions
 }
 
 interface InternalSubscriber {
