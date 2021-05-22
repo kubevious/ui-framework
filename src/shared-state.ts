@@ -214,7 +214,7 @@ export class SharedState implements ISharedState
             } else {
                 if (persistence.base64 || persistence.json)
                 {
-                    rawValue = atob(value!)
+                    value = atob(value)
                 }
     
                 if (persistence.json) {
