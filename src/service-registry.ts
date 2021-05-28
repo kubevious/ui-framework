@@ -30,6 +30,8 @@ export class ServiceRegistry
 
     registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService, TServiceInfo>): void
     {
+        console.log("[UI-FRAMEWORK] RegisterService: ", info);
+
         if (!info.kind) {
             throw new Error("Service kind not set");
         }
