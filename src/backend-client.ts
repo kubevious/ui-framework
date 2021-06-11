@@ -8,7 +8,7 @@ export interface BackendClientOptions
 {
     headers?: Record<string, string>,
     authorizerCb?: AuthorizerCb,
-    canRetryCb?: (statusCode: ErrorResponse, reason: any, requestInfo: RequestInfo) => boolean,
+    canRetryCb?: (errorResponse: ErrorResponse, reason: any, requestInfo: RequestInfo) => boolean,
 }
 
 export class BackendClient {
