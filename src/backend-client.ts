@@ -3,12 +3,12 @@ import { HttpClient, RequestInfo } from '@kubevious/http-client'
 import { AuthorizerCb, HttpClientRetryOptions } from '@kubevious/http-client/dist/http-client';
 
 import { RemoteTrack } from './remote-track';
-import { request } from 'http';
+
 export interface BackendClientOptions
 {
     headers?: Record<string, string>,
     authorizerCb?: AuthorizerCb,
-    canRetryCb?: (statusCode: any, reason: any, requestInfo: RequestInfo) => boolean,
+    canRetryCb?: (statusCode: ErrorResponse, reason: any, requestInfo: RequestInfo) => boolean,
 }
 
 export class BackendClient {
@@ -39,13 +39,24 @@ export class BackendClient {
 
     private _canContinueCb(reason: any, requestInfo: RequestInfo) : Resolvable<boolean>
     {
-        const statusCode = reason.status || reason.statusCode || reason.code || reason.status_code;
-        if (statusCode == 400) {
+        const errorResponse : ErrorResponse = {
+
+        }
+
+        if (reason) {
+            if (reason.response) {
+                errorResponse.statusCode = reason.response.status;
+                errorResponse.statusText = reason.response.statusText;
+                errorResponse.data = reason.response.data;
+            }
+        }
+
+        if (errorResponse.statusCode == 400) {
             return false;
         } 
 
         if (this._options.canRetryCb) {
-            if (!this._options.canRetryCb!(statusCode, reason, requestInfo)) {
+            if (!this._options.canRetryCb!(errorResponse, reason, requestInfo)) {
                 return false;
             }
         }
@@ -54,4 +65,11 @@ export class BackendClient {
     }
 
 
+}
+
+export interface ErrorResponse
+{
+    statusCode?: number,
+    statusText?: string,
+    data?: any
 }

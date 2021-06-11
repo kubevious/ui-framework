@@ -1,6 +1,6 @@
 export { Application } from './app';
 export { SharedState, SubscribeHandler, ISharedState, Subscriber } from './shared-state';
-export { BackendClient, BackendClientOptions } from './backend-client'
+export { BackendClient, BackendClientOptions, ErrorResponse } from './backend-client'
 export { RemoteTrack } from './remote-track'
 export { ServiceRegistry } from './service-registry'
 
