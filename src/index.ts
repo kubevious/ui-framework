@@ -10,7 +10,7 @@ export { useService, useSharedState, subscribeToSharedState } from './function-c
 
 export { app } from './global'
 
-export { HttpClient, HttpMethod, IHttpClient } from '@kubevious/http-client'
+export { HttpClient, HttpMethod, IHttpClient, RequestInfo } from '@kubevious/http-client'
 
 export { useSearchQuery } from './query-params'
 
