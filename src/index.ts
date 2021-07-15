@@ -21,3 +21,5 @@ export { IClosable } from './types'
 export { IService, BaseService } from './base-service'
 
 export { BaseHttpService } from './base-http-service'
+
+export { dateToString } from './utils/date-utils'
