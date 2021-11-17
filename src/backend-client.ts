@@ -1,5 +1,5 @@
 import { Resolvable } from 'the-promise';
-import { HttpClient, RequestInfo } from '@kubevious/http-client'
+import { HttpClient, RequestInfo, HttpClientError } from '@kubevious/http-client'
 import { AuthorizerCb, HttpClientRetryOptions } from '@kubevious/http-client/dist/http-client';
 
 import { RemoteTrack } from './remote-track';
@@ -39,24 +39,14 @@ export class BackendClient {
 
     private _canContinueCb(reason: any, requestInfo: RequestInfo) : Resolvable<boolean>
     {
-        const errorResponse : ErrorResponse = {
-
-        }
-
-        if (reason) {
-            if (reason.response) {
-                errorResponse.statusCode = reason.response.status;
-                errorResponse.statusText = reason.response.statusText;
-                errorResponse.data = reason.response.data;
-            }
-        }
-
-        if (errorResponse.statusCode == 400) {
+        const httpError = reason as HttpClientError;
+        
+        if (httpError?.httpStatusCode === 400) {
             return false;
         } 
 
         if (this._options.canRetryCb) {
-            if (!this._options.canRetryCb!(errorResponse, reason, requestInfo)) {
+            if (!this._options.canRetryCb!(httpError, reason, requestInfo)) {
                 return false;
             }
         }
@@ -67,9 +57,6 @@ export class BackendClient {
 
 }
 
-export interface ErrorResponse
+export interface ErrorResponse extends HttpClientError
 {
-    statusCode?: number,
-    statusText?: string,
-    data?: any
 }

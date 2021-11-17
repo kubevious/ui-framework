@@ -33,7 +33,7 @@ export class Application
         return this._operationLogTracker;
     }
 
-    initHttpClient(urlBase?: string, options?: BackendClientOptions)
+    initHttpClient(urlBase?: string, options?: BackendClientOptions) : void
     {
         this._backendClient = new BackendClient(urlBase, this._remoteTrack, options);
     }
