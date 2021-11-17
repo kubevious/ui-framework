@@ -1,10 +1,10 @@
-import { RequestInfo } from '@kubevious/http-client';
+import { RequestInfo, ITracker, AxiosResponse, HttpClientError } from '@kubevious/http-client';
 
 import { ISharedState } from './shared-state';
 import { isEmptyObject } from './utils/object-utils';
 
 
-export class RemoteTrack
+export class RemoteTrack implements ITracker
 {
     private _sharedState: ISharedState
     private _requests: Record<string, TrackerRequestInfo> = {};
@@ -26,14 +26,14 @@ export class RemoteTrack
         }
     }
 
-    finish(requestInfo : RequestInfo, response: any)
+    finish(requestInfo : RequestInfo, response: AxiosResponse)
     {
         console.log('[TRACKER::finish] ', requestInfo.method, ' :: ', requestInfo.url);        
        
         this._detectLoading(requestInfo.id)
     }
 
-    fail(requestInfo : RequestInfo, reason: any)
+    fail(requestInfo : RequestInfo, reason: HttpClientError)
     {
         console.error('[TRACKER::fail] ', requestInfo.method, ' :: ', requestInfo.url , ' :: ', reason.message);
         
@@ -48,9 +48,9 @@ export class RemoteTrack
         console.info('[TRACKER::tryAttempt] ', requestInfo.method, ' :: ', requestInfo.url);
     }
 
-    failedAttempt(requestInfo : RequestInfo, reason: any, data: any, status: number)
+    failedAttempt(requestInfo : RequestInfo, reason: HttpClientError)
     {
-        console.warn('[TRACKER::fail] ', requestInfo.method, ' :: ', requestInfo.url , ', status:', status);
+        console.warn('[TRACKER::fail] ', requestInfo.method, ' :: ', requestInfo.url , ', status:', reason.httpStatusCode);
     }
 
     private _detectLoading(id: string): void {

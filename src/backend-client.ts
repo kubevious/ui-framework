@@ -8,7 +8,7 @@ export interface BackendClientOptions
 {
     headers?: Record<string, string>,
     authorizerCb?: AuthorizerCb,
-    canRetryCb?: (errorResponse: ErrorResponse, reason: any, requestInfo: RequestInfo) => boolean,
+    canRetryCb?: (reason: HttpClientError, requestInfo: RequestInfo) => boolean,
 }
 
 export class BackendClient {
@@ -37,16 +37,14 @@ export class BackendClient {
         return this._client.scope(url || '');
     }
 
-    private _canContinueCb(reason: any, requestInfo: RequestInfo) : Resolvable<boolean>
+    private _canContinueCb(reason: HttpClientError, requestInfo: RequestInfo) : Resolvable<boolean>
     {
-        const httpError = reason as HttpClientError;
-        
-        if (httpError?.httpStatusCode === 400) {
+        if (reason?.httpStatusCode === 400) {
             return false;
         } 
 
         if (this._options.canRetryCb) {
-            if (!this._options.canRetryCb!(httpError, reason, requestInfo)) {
+            if (!this._options.canRetryCb!(reason, requestInfo)) {
                 return false;
             }
         }
@@ -55,8 +53,4 @@ export class BackendClient {
     }
 
 
-}
-
-export interface ErrorResponse extends HttpClientError
-{
 }
