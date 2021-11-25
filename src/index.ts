@@ -12,7 +12,7 @@ export { app } from './global'
 
 export { HttpClient, HttpMethod, IHttpClient, RequestInfo, HttpClientError } from '@kubevious/http-client'
 
-export { useSearchQuery } from './query-params'
+export { useSearchQuery, useSearchQueryParams } from './query-params'
 
 export { OperationLogTracker } from './operation-log-tracker'
 

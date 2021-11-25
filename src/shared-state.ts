@@ -59,7 +59,7 @@ export class SharedState implements ISharedState
     */
     subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber
     {
-        let subscriber : InternalSubscriber = {
+        const subscriber : InternalSubscriber = {
             id: uuidv4(),
             handler: cb,
             isArray: _.isArray(keyOrKeys),
@@ -68,7 +68,7 @@ export class SharedState implements ISharedState
 
         this._subscribers[subscriber.id] = subscriber;
 
-        for(let key of subscriber.keys) {
+        for(const key of subscriber.keys) {
             if (!this._subscribedKeys[key]) {
                 this._subscribedKeys[key] = {}
             }
@@ -87,7 +87,7 @@ export class SharedState implements ISharedState
 
     onChange(cb: GlobalSubscribeHandler) : Subscriber
     {
-        let subscriber : InternalGlobalSubscriber = {
+        const subscriber : InternalGlobalSubscriber = {
             id: uuidv4(),
             handler: cb,
         }
@@ -164,9 +164,9 @@ export class SharedState implements ISharedState
         {
             this._skipPersistence = true;
 
-            let searchParams = new URLSearchParams(window.location.search);
+            const searchParams = new URLSearchParams(window.location.search);
 
-            for(let name of _.keys(this._metadata))
+            for(const name of _.keys(this._metadata))
             {
                 const metadata = this._getMetadata(name);
                 if (metadata.persistence)
@@ -185,14 +185,14 @@ export class SharedState implements ISharedState
     {
         if (persistence.kind === 'url')
         {
-            let rawValue = searchParams.get(persistence.key);
+            const rawValue = searchParams.get(persistence.key);
             this._applyPersistentValue(name, rawValue, persistence);
             return;
         }
 
         if (persistence.kind === 'local-storage')
         {
-            let rawValue = localStorage.getItem(persistence.key);
+            const rawValue = localStorage.getItem(persistence.key);
             this._applyPersistentValue(name, rawValue, persistence);
             return;
         }
@@ -239,7 +239,7 @@ export class SharedState implements ISharedState
         
         if (persistence.kind === 'url')
         {
-            let searchParams = new URLSearchParams(window.location.search);
+            const searchParams = new URLSearchParams(window.location.search);
             if (_.isNullOrUndefined(value)) {
                 searchParams.delete(persistence.key)
             } else {
@@ -248,7 +248,7 @@ export class SharedState implements ISharedState
 
             let url = "";
             url += window.location.pathname;
-            let searchParamsStr = searchParams.toString();
+            const searchParamsStr = searchParams.toString();
             if (searchParamsStr) {
                 url += '?' + searchParamsStr;
             }
@@ -304,13 +304,13 @@ export class SharedState implements ISharedState
 
     private _process()
     {
-        let diff : Record<string, boolean> = {};
+        const diff : Record<string, boolean> = {};
 
         {
-            for(let name of _.keys(this._values))
+            for(const name of _.keys(this._values))
             {
-                let value = this._values[name];
-                let lastValue = this._lastValues[name];
+                const value = this._values[name];
+                const lastValue = this._lastValues[name];
 
                 if (!_.fastDeepEqual(value, lastValue))
                 {
@@ -320,21 +320,21 @@ export class SharedState implements ISharedState
         }
 
         {
-            for(let name of _.keys(this._lastValues))
+            for(const name of _.keys(this._lastValues))
             {
-                let value = this._values[name];
+                const value = this._values[name];
                 if (_.isNullOrUndefined(value)) {
                     diff[name] = true;
                 }
             }
         }
         
-        let subscriberIDs : Record<string, boolean> = {};
-        for(let name of _.keys(diff))
+        const subscriberIDs : Record<string, boolean> = {};
+        for(const name of _.keys(diff))
         {
             if (this._subscribedKeys[name])
             {
-                for(let id of _.keys(this._subscribedKeys[name]))
+                for(const id of _.keys(this._subscribedKeys[name]))
                 {
                     subscriberIDs[id] = true;
                 }
@@ -343,14 +343,14 @@ export class SharedState implements ISharedState
 
         this._lastValues = _.cloneDeep(this._values);
 
-        for(let id of _.keys(subscriberIDs))
+        for(const id of _.keys(subscriberIDs))
         {
             this._notifyToSubscriber(id);
         }
 
         if (_.keys(this._globalSubscribers).length > 0) 
         {
-            for(let globalSubscriber of _.values(this._globalSubscribers))
+            for(const globalSubscriber of _.values(this._globalSubscribers))
             {
                 globalSubscriber.handler();
             }
@@ -359,8 +359,8 @@ export class SharedState implements ISharedState
 
     private _notifyToSubscriber(id: string)
     {
-        let subscriber = this._subscribers[id];
-        let argsArray : any[] = [];
+        const subscriber = this._subscribers[id];
+        const argsArray : any[] = [];
 
         if (!subscriber)
         {
@@ -369,17 +369,17 @@ export class SharedState implements ISharedState
 
         if (subscriber.isArray)
         {
-            let dict : Record<string, any> = {};
-            for(let name of subscriber.keys)
+            const dict : Record<string, any> = {};
+            for(const name of subscriber.keys)
             {
-                let value = this.get(name);
+                const value = this.get(name);
                 dict[name] = value;
             }
             argsArray.push(dict);
         }
         else
         {
-            let value = this.get(subscriber.keys[0]);
+            const value = this.get(subscriber.keys[0]);
             argsArray.push(value);
         }
 
@@ -390,7 +390,7 @@ export class SharedState implements ISharedState
     private _makeMetadata(options?: SharedFieldOptions) : SharedFieldMetadata
     {
         options = options || {};
-        let metadata : SharedFieldMetadata = {
+        const metadata : SharedFieldMetadata = {
             skipCompare: _.isNullOrUndefined(options.skipCompare) ? false : options.skipCompare!,
             skipValueOutput: _.isNullOrUndefined(options.skipValueOutput) ? false : options.skipValueOutput!,
             persistence: options.persistence
@@ -400,7 +400,7 @@ export class SharedState implements ISharedState
 
     private _getMetadata(name: string) : SharedFieldMetadata
     {
-        let value = this._metadata[name];
+        const value = this._metadata[name];
         return this._makeMetadata(value);
     }
 }
@@ -441,7 +441,7 @@ interface InternalGlobalSubscriber {
 export interface Subscriber {
     id: string,
     close: () => void
-};
+}
 
 export interface ISharedState {
     user() : ISharedState;
@@ -476,7 +476,7 @@ export class SharedStateScope implements ISharedState
 
     subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber
     {
-        let subscriber = this._sharedState.subscribe(keyOrKeys, cb);
+        const subscriber = this._sharedState.subscribe(keyOrKeys, cb);
         this._subscribers.push(subscriber);
         return subscriber;
     }
@@ -492,7 +492,7 @@ export class SharedStateScope implements ISharedState
     }
 
     onChange(cb: GlobalSubscribeHandler) : Subscriber {
-        let subscriber = this._sharedState.onChange(cb);
+        const subscriber = this._sharedState.onChange(cb);
         this._subscribers.push(subscriber);
         return subscriber;
     }
