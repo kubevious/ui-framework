@@ -3,7 +3,7 @@ import { BackendClient, BackendClientOptions } from './backend-client';
 import { RemoteTrack } from './remote-track';
 import { OperationLogTracker } from './operation-log-tracker';
 import { SharedState } from './shared-state';
-import { ServiceInfo, ServiceInitCb, ServiceRegistry } from './service-registry'
+import { ServiceInitCb, ServiceRegistry } from './service-registry'
 import { IService } from '.';
 import { HttpClient } from '@kubevious/http-client';
 
@@ -15,7 +15,8 @@ export class Application
     private _remoteTrack = new RemoteTrack(this._sharedState);
     private _operationLogTracker = new OperationLogTracker(this._sharedState);
     private _serviceRegistry = new ServiceRegistry(this._sharedState);
-    private _backendClient? : BackendClient;
+    
+    private _backendClients : Record<string, BackendClient> = {};
 
     constructor()
     {
@@ -33,17 +34,30 @@ export class Application
         return this._operationLogTracker;
     }
 
-    initHttpClient(urlBase?: string, options?: BackendClientOptions) : void
+    initHttpClient(scope: any, urlBase?: string, options?: BackendClientOptions) : void
     {
-        this._backendClient = new BackendClient(urlBase, this._remoteTrack, options);
+        const key = this._httpClientKey(scope);
+
+        const client = new BackendClient(urlBase, this._remoteTrack, options);
+        this._backendClients[key] = client;
     }
 
-    httpClient(url: string) : HttpClient
+    httpClient(scope: any, url: string) : HttpClient
     {
-        if (!this._backendClient) {
-            throw new Error("HttpClient not initialized. Call [initHttpClient] first.");
+        const key = this._httpClientKey(scope);
+        const client = this._backendClients[key];
+
+        if (!client) {
+            console.error("[App::httpClient] Missing HttpClient. Key: ", scope)
+            throw new Error("HttpClient not found.");
         }
-        return this._backendClient!.scope(url);
+        return client.scope(url);
+    }
+
+    private _httpClientKey(scope: any)
+    {
+        scope = scope || {};
+        return _.stableStringify(scope);
     }
 
     registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService, TServiceInfo>): void
