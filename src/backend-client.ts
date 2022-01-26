@@ -1,4 +1,4 @@
-import { Resolvable } from 'the-promise';
+import { BlockingResolver, Resolvable } from 'the-promise';
 import { HttpClient, RequestInfo, HttpClientError } from '@kubevious/http-client'
 import { AuthorizerCb, HttpClientRetryOptions } from '@kubevious/http-client/dist/http-client';
 
@@ -7,6 +7,7 @@ import { RemoteTrack } from './remote-track';
 export interface BackendClientOptions
 {
     headers?: Record<string, string>,
+    authorizerResolverCb?: BlockingResolver<string>,
     authorizerCb?: AuthorizerCb,
     canRetryCb?: (reason: HttpClientError, requestInfo: RequestInfo) => boolean,
 }
@@ -28,7 +29,8 @@ export class BackendClient {
             retry: retry,
             headers: this._options.headers,
             tracker: remoteTrack,
-            authorizerCb: this._options.authorizerCb
+            authorizerResolverCb: this._options.authorizerResolverCb,
+            authorizerCb: this._options.authorizerCb,
         })
     }
 
