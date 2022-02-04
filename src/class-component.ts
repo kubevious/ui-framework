@@ -1,16 +1,16 @@
 import { PureComponent } from 'react'
 import { IService } from './base-service';
-import { ServiceInfo } from './service-registry';
+import { BaseServiceInfo } from './service-registry';
 import { ISharedState, SubscribeHandler } from './shared-state';
 
 import { app } from './global'
 
-export class ClassComponent<TProps = {}, TState = {}, TService extends IService = IService> extends PureComponent<TProps, TState> {
+export class ClassComponent<TProps = {}, TState = {}, TService extends IService = IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo> extends PureComponent<TProps, TState> {
     
     private _service?: TService;
     private _sharedState: ISharedState;
 
-    constructor(props: Readonly<TProps> | TProps, context?: any, serviceInfo?: ServiceInfo) {
+    constructor(props: Readonly<TProps> | TProps, context?: any, serviceInfo?: TServiceInfo) {
         super(props);
         console.log('[ClassComponent] ' + this.constructor.name + ' constructor. Props:', props);
 

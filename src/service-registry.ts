@@ -2,22 +2,35 @@ import _ from "the-lodash";
 import { ISharedState } from './shared-state';
 import { IService } from './base-service';
 
-export interface ServiceInitParams<TServiceInfo> {
+export interface ServiceInitParams<TServiceInfo>
+{
     info: TServiceInfo,
     sharedState: ISharedState
 }
 
-export type ServiceInitCb<TService extends IService, TServiceInfo = {}> = (params: ServiceInitParams<TServiceInfo>) => TService;
+export interface BaseServiceInfo
+{ 
+    kind: string 
+}
 
+export type ServiceInitCb<TService extends IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo> = 
+    (params: ServiceInitParams<TServiceInfo>) => TService;
+
+interface ServiceItem<TService extends IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo>
+{
+    kind: string,
+    info: BaseServiceInfo,
+    cb: ServiceInitCb<TService, TServiceInfo>,
+    // services: Record<string, IService>
+}
 export class ServiceRegistry
 {
-    private _sharedState: ISharedState
-    private _servicesDict: Record<string, ServiceItem<IService, {}>> = {};
+    private _sharedState: ISharedState;
+    private _servicesDict: Record<string, ServiceItem<IService, BaseServiceInfo>> = {};
 
     constructor(sharedState: ISharedState)
     {
         this._sharedState = sharedState;
-        this._servicesDict = {};
     }
 
     get sharedState() {
@@ -28,7 +41,8 @@ export class ServiceRegistry
         return _.keys(this._servicesDict);
     }
 
-    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService, TServiceInfo>): void
+    registerService<TService extends IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo>
+        (info: BaseServiceInfo, cb: ServiceInitCb<TService, TServiceInfo>): void
     {
         console.log("[UI-FRAMEWORK] RegisterService: ", info);
 
@@ -42,7 +56,7 @@ export class ServiceRegistry
             cb: cb,
             // services: {}
         };
-        this._servicesDict[svcInfo.kind] = <ServiceItem<IService, {}>>(<any>svcInfo);
+        this._servicesDict[svcInfo.kind] = <ServiceItem<IService, BaseServiceInfo>>(<any>svcInfo);
     }
 
     // closeServicesByKind(kind: string): void
@@ -57,7 +71,8 @@ export class ServiceRegistry
     //     }
     // }
 
-    resolveService<TService extends IService, TServiceInfo = {}>(info: ServiceInfo<TServiceInfo>): TService | never
+    resolveService<TService extends IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo>
+        (info: TServiceInfo): TService | never
     {
         if (!info.kind) {
             throw new Error("Service kind not set");
@@ -76,7 +91,7 @@ export class ServiceRegistry
 
         const mySvcInfo = <ServiceItem<TService, TServiceInfo>>(<any>svcInfo);
 
-        let newService = mySvcInfo.cb({
+        const newService = mySvcInfo.cb({
             info, 
             sharedState: this.sharedState
         });
@@ -91,14 +106,6 @@ export class ServiceRegistry
 
 }
 
-export type ServiceInfo<TServiceInfo = {}> = {
-    kind: string 
-} & TServiceInfo;
-
-interface ServiceItem<TService extends IService, TServiceInfo = {}>
-{
-    kind: string,
-    info: ServiceInfo,
-    cb: ServiceInitCb<TService, TServiceInfo>,
-    // services: Record<string, IService>
-};
+// export type ServiceInfo<TServiceInfo = {}> = {
+//     kind: string 
+// } & TServiceInfo;

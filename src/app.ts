@@ -3,7 +3,7 @@ import { BackendClient, BackendClientOptions } from './backend-client';
 import { RemoteTrack } from './remote-track';
 import { OperationLogTracker } from './operation-log-tracker';
 import { SharedState } from './shared-state';
-import { ServiceInitCb, ServiceRegistry } from './service-registry'
+import { ServiceInitCb, ServiceRegistry, BaseServiceInfo } from './service-registry'
 import { IService } from '.';
 import { HttpClient } from '@kubevious/http-client';
 
@@ -60,8 +60,9 @@ export class Application
         return _.stableStringify(scope);
     }
 
-    registerService<TService extends IService, TServiceInfo = {}>(info: { kind: string }, cb: ServiceInitCb<TService, TServiceInfo>): void
+    registerService<TService extends IService, TServiceInfo extends BaseServiceInfo = BaseServiceInfo>
+        (info: BaseServiceInfo, cb: ServiceInitCb<TService, TServiceInfo>): void
     {
-        return this.serviceRegistry.registerService<TService, TServiceInfo>(info, cb);
+        return this.serviceRegistry.registerService(info, cb);
     }
 }
