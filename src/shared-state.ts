@@ -483,8 +483,8 @@ export interface ISharedState {
     close() : void;
     keys: string[];
     subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber;
-    get<T = any>(name: string, defaultValue: T) : T | null;
     tryGet<T = any>(name: string) : T | null;
+    get<T = any>(name: string, defaultValue: T) : T;
     set<T = any>(name: string, value: T | null) : void;
     onChange(cb: GlobalSubscribeHandler) : Subscriber;
 
