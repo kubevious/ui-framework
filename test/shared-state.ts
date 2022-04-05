@@ -8,15 +8,30 @@ import { SharedState } from '../src';
 describe('shared-state', () => {
 
     it('test-set', () => {
-        let sharedState = new SharedState();
+        const sharedState = new SharedState();
         sharedState.set('aaa', 'bbb');
 
-        let value = sharedState.get('aaa');
+        const value = sharedState.tryGet('aaa');
         should(value).be.equal('bbb');
     });
 
+    it('test-set-get-01', () => {
+        const sharedState = new SharedState();
+        sharedState.set('aaa', 'ccc');
+
+        const value = sharedState.get('aaa', 'xxx');
+        should(value).be.equal('ccc');
+    });
+
+    it('test-set-get-02', () => {
+        const sharedState = new SharedState();
+
+        const value = sharedState.get('not-present-key', 'xxx');
+        should(value).be.equal('xxx');
+    });
+
     it('test-key-subscribe', () => {
-        let sharedState = new SharedState();
+        const sharedState = new SharedState();
         sharedState.set('aaa', 'bbb');
 
         let stage : number = 1;
@@ -55,7 +70,7 @@ describe('shared-state', () => {
 
 
     it('test-global-subscribe', () => {
-        let sharedState = new SharedState();
+        const sharedState = new SharedState();
         sharedState.set('aaa', 'bbb');
 
         let stage : number = 1;
@@ -94,7 +109,7 @@ describe('shared-state', () => {
 
 
     it('test-global-scoped-subscribe', () => {
-        let globalSharedState = new SharedState();
+        const globalSharedState = new SharedState();
         const sharedState = globalSharedState.user();
         sharedState.set('aaa', 'bbb');
 
@@ -132,5 +147,28 @@ describe('shared-state', () => {
 
     });
 
+
+    it('user-flag-01', () => {
+        const sharedState = new SharedState();
+
+        let value = sharedState.isUserPresent('needs-something');
+        should(value).be.equal(false);
+
+        sharedState.markUserFlag('needs-something', 'a');
+        value = sharedState.isUserPresent('needs-something');
+        should(value).be.equal(true);
+
+        sharedState.markUserFlag('needs-something', 'b');
+        value = sharedState.isUserPresent('needs-something');
+        should(value).be.equal(true);
+
+        sharedState.clearUserFlag('needs-something', 'a');
+        value = sharedState.isUserPresent('needs-something');
+        should(value).be.equal(true);
+
+        sharedState.clearUserFlag('needs-something', 'b');
+        value = sharedState.isUserPresent('needs-something');
+        should(value).be.equal(false);
+    });
 
 });

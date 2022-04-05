@@ -24,11 +24,9 @@ export class OperationLogTracker
     }
 
     report(message: string): void {
-        let operationLogs = this._sharedState.get('operation_logs')
+        let operationLogs = this._sharedState.get<Message[]>('operation_logs', [])!;
 
-        const newMessage = { id: uuidv4(), message, date: new Date() }
-
-        this._sharedState.set('latest_operation_log', newMessage)
+        const newMessage : Message = { id: uuidv4(), message, date: new Date() }
 
         operationLogs = [newMessage, ...operationLogs]
 
@@ -41,13 +39,13 @@ export class OperationLogTracker
 
         setTimeout(() => {
             this._removeMessage(newMessage)
-        }, MESSAGES_TIMEOUT_MS)
+        }, MESSAGES_TIMEOUT_MS);
     }
 
     private _removeMessage(message: Message) {
-        const operationLogs = this._sharedState.get<Message[]>('operation_logs')
+        const operationLogs = this._sharedState.get<Message[]>('operation_logs', [])!;
 
-        const newOperationLogs = operationLogs.filter(item => item.id !== message.id)
+        const newOperationLogs = operationLogs.filter(item => item.id !== message.id);
 
         this._sharedState.set('operation_logs', newOperationLogs)
     }

@@ -28,8 +28,13 @@ export class SharedState implements ISharedState
 
     register(name: string, options?: SharedFieldOptions)
     {
-        let metadata = this._makeMetadata(options)
+        const metadata = this._makeMetadata(options)
         this._metadata[name] = metadata;
+    }
+
+    init()
+    {
+        this._loadPersistedValues();
     }
 
     close()
@@ -104,13 +109,22 @@ export class SharedState implements ISharedState
         };
     }
 
-    get(name: string)
+    tryGet<T = any>(name: string) : T | null
     {
-        let value = this._values[name];
+        const value = this._values[name];
         if (_.isNullOrUndefined(value)) {
-            value = null;
+            return null;
         }
-        return value;
+        return value as T;
+    }
+
+    get<T = any>(name: string, defaultValue: T) : T
+    {
+        const value = this.tryGet(name);
+        if (_.isNullOrUndefined(value)) {
+            return defaultValue;
+        }
+        return value as T;
     }
 
     set(name: string, value: any)
@@ -153,9 +167,30 @@ export class SharedState implements ISharedState
         this._trigger();
     }
 
-    init()
+    markUserFlag(name: string, flag: string)
     {
-        this._loadPersistedValues();
+        const dict = this._getDict(name);
+        dict[flag] = true;
+        this.set(name, dict);
+    }
+
+    clearUserFlag(name: string, flag: string)
+    {
+        const dict = this._getDict(name);
+        delete dict[flag];
+        this.set(name, dict);
+    }
+
+    isUserPresent(name: string)
+    {
+        const dict = this._getDict(name);
+        return (_.keys(dict).length > 0);
+    }
+
+    private _getDict(name: string)
+    {
+        const dict = this.get<Record<string, boolean>>(name, {})!;
+        return _.clone(dict);
     }
     
     private _loadPersistedValues()
@@ -372,14 +407,14 @@ export class SharedState implements ISharedState
             const dict : Record<string, any> = {};
             for(const name of subscriber.keys)
             {
-                const value = this.get(name);
+                const value = this.tryGet(name);
                 dict[name] = value;
             }
             argsArray.push(dict);
         }
         else
         {
-            const value = this.get(subscriber.keys[0]);
+            const value = this.tryGet(subscriber.keys[0]);
             argsArray.push(value);
         }
 
@@ -448,9 +483,15 @@ export interface ISharedState {
     close() : void;
     keys: string[];
     subscribe(keyOrKeys: string | string[], cb: SubscribeHandler) : Subscriber;
-    get<T = any>(name: string) : T;
-    set<T = any>(name: string, value: T) : void;
+    get<T = any>(name: string, defaultValue: T) : T | null;
+    tryGet<T = any>(name: string) : T | null;
+    set<T = any>(name: string, value: T | null) : void;
     onChange(cb: GlobalSubscribeHandler) : Subscriber;
+
+    markUserFlag(name: string, flag: string) : void;
+    clearUserFlag(name: string, flag: string) : void;
+    isUserPresent(name: string) : boolean;
+    
 }
 
 export class SharedStateScope implements ISharedState
@@ -481,9 +522,14 @@ export class SharedStateScope implements ISharedState
         return subscriber;
     }
 
-    get<T = any>(name: string) : T
+    tryGet<T = any>(name: string) : T | null
     {
-        return <T>this._sharedState.get(name);
+        return <T>this._sharedState.tryGet(name);
+    }
+    
+    get<T = any>(name: string, defaultValue: T) : T
+    {
+        return <T>this._sharedState.get(name, defaultValue);
     }
 
     set<T = any>(name: string, value: T)
@@ -501,4 +547,20 @@ export class SharedStateScope implements ISharedState
     {
         return this._sharedState.keys;
     }
+
+    markUserFlag(name: string, flag: string) : void
+    {
+        return this._sharedState.markUserFlag(name, flag);
+    }
+
+    clearUserFlag(name: string, flag: string) : void
+    {
+        return this._sharedState.clearUserFlag(name, flag);
+    }
+
+    isUserPresent(name: string) : boolean
+    {
+        return this._sharedState.isUserPresent(name);
+    }
+
 }
