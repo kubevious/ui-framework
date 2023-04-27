@@ -1,7 +1,7 @@
 import 'mocha';
 import should = require('should');
 
-import { Promise } from 'the-promise';
+import { MyPromise } from 'the-promise';
 
 import { SharedState } from '../src';
 
@@ -53,7 +53,7 @@ describe('shared-state', () => {
                 })
 
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage1Passed).be.true();
             })
@@ -61,7 +61,7 @@ describe('shared-state', () => {
                 stage = 2;
                 sharedState.set('aaa', 'ccc');
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage2Passed).be.true();
             });
@@ -90,7 +90,7 @@ describe('shared-state', () => {
                 })
 
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage1Passed).be.true();
             })
@@ -98,7 +98,7 @@ describe('shared-state', () => {
                 stage = 2;
                 sharedState.set('aaa', 'ccc');
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage2Passed).be.true();
                 should(sharedState.keys).be.eql(['aaa'])
@@ -130,7 +130,7 @@ describe('shared-state', () => {
                 })
 
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage1Passed).be.true();
             })
@@ -138,7 +138,7 @@ describe('shared-state', () => {
                 stage = 2;
                 sharedState.set('aaa', 'ccc');
             })
-            .then(() => Promise.timeout(100))
+            .then(() => MyPromise.delay(100))
             .then(() => {
                 should(stage2Passed).be.true();
                 should(sharedState.keys).be.eql(['aaa'])
