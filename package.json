@@ -17,7 +17,7 @@
   "author": "Ruben Hakopian <ruben.hakopian@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@kubevious/http-client": "^1.0.20",
+    "@kubevious/http-client": "^1.0.21",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-router-dom": "^6.10.0",
